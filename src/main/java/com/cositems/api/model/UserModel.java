@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-@Document(collection = "products")
+@Document(collection = "users")
 public class UserModel {
     @Id
     private String username;
