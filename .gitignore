@@ -1,0 +1,65 @@
+HELP.md
+.gradle
+.env
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+# Logs
+*.log
+logs/
+
+# Arquivos temporários do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de compilação/execução
+*.class
+*.jar
+*.war
+*.ear
+
+# Arquivos de relatórios do Gradle
+reports/
+tmp/
+
+# Arquivos temporários do compilador
+hs_err_pid*
+replay_pid*
+
+# Arquivos de cache locais
+.coverage
+*.exec
+
