@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,4 +25,12 @@ public class ShoppingCart {
     private String customerId;
     @Builder.Default
     private List<CartItem> cartItems = new ArrayList<>();
+
+    @Data
+    public class CartItem {
+    private String productId;
+    private int quantity;    
+
+    }
+
 }
