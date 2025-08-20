@@ -24,33 +24,47 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
+        
     }
+
 
     @PostMapping("/sellers")
     public ResponseEntity<UserResponseDTO> createSeller(@RequestBody UserRequestDTO userRequest) {
         UserResponseDTO userResponse = userService.createSeller(userRequest);
-        
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
+
     }
+
 
     @PostMapping("/customers")
     public ResponseEntity<UserResponseDTO> createCustomer(@RequestBody UserRequestDTO userRequest) {
         UserResponseDTO userResponse = userService.createCustomer(userRequest);
-        
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
+
     }
+
 
     @GetMapping
     public ResponseEntity<List<UserResponseDTO>> getAll() {
         List<UserResponseDTO> users = userService.getAllUsers();
         return new ResponseEntity<>(users, HttpStatus.OK);
+
     }
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable String id) {
+        UserResponseDTO userResponse = userService.getUserById(id);
+        return new ResponseEntity<>(userResponse, HttpStatus.OK);
+
+    }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        
+
     }
 
 }
