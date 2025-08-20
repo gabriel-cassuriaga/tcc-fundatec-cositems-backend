@@ -31,9 +31,9 @@ public class Order {
 
     @Data
     public static class OrderItem {
-        private String produtoId;
-        private String nome;
-        private int quantidade;
-        private double precoUnitario;
+        private String productId;
+        private String name;
+        private int quantity;
+        private double price;
     }
 }
