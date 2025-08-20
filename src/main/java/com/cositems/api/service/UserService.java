@@ -8,6 +8,7 @@ import com.cositems.api.dto.UserRequestDTO;
 import com.cositems.api.dto.UserResponseDTO;
 import com.cositems.api.model.Customer;
 import com.cositems.api.model.Seller;
+import com.cositems.api.model.UserModel;
 import com.cositems.api.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,13 @@ public class UserService {
         return repository.findAll().stream()
             .map(UserResponseDTO::new)
             .toList();
+    }
+
+    public void deleteUser(String id) {
+        UserModel user = repository.findById(id).orElseThrow(() -> 
+            new RuntimeException("Usuário não encontrado"));
+        
+        repository.delete(user);
     }
 
 }
