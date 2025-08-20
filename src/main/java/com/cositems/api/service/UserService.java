@@ -30,7 +30,9 @@ public class UserService {
 
         UserResponseDTO userResponse = new UserResponseDTO(customer);
         return userResponse;
+
     }
+
 
     public UserResponseDTO createSeller(UserRequestDTO userRequest) {
         Seller seller = 
@@ -44,19 +46,34 @@ public class UserService {
 
         UserResponseDTO userResponse = new UserResponseDTO(seller);
         return userResponse;
+
     }
+
+
+    public UserResponseDTO getUserById(String id) {
+        UserModel user = repository.findById(id).orElseThrow(() -> 
+            new RuntimeException("Usuário não encontrado"));
+
+        UserResponseDTO userResponse = new UserResponseDTO(user);
+        return userResponse;
+
+    }
+
 
     public List<UserResponseDTO> getAllUsers() {
         return repository.findAll().stream()
             .map(UserResponseDTO::new)
             .toList();
+
     }
+
 
     public void deleteUser(String id) {
         UserModel user = repository.findById(id).orElseThrow(() -> 
             new RuntimeException("Usuário não encontrado"));
         
         repository.delete(user);
+
     }
 
 }
