@@ -13,6 +13,7 @@ import lombok.Setter;
 @Document(collection = "users")
 public class UserModel {
     @Id
+    private String id;
     private String username;
     private String email;
     private String password;
