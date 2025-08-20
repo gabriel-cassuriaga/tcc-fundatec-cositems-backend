@@ -7,8 +7,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.cositems.api.dto.UserRequestDTO;
 import com.cositems.api.dto.UserResponseDTO;
-import com.cositems.api.model.UserModel;
 import com.cositems.api.service.UserService;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequestMapping("/users")
@@ -20,10 +25,17 @@ public class UserController {
     }
 
     @PostMapping
-    public UserResponseDTO createUser(@RequestBody UserRequestDTO userRequest) {
-        UserModel newUser = userService.createUser(userRequest);
-        return new UserResponseDTO(newUser);
+    public ResponseEntity<UserResponseDTO> createSeller(@RequestBody UserRequestDTO userRequest) {
+        UserResponseDTO userResponse = userService.createSeller(userRequest);
+        
+        return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
 
+        @PostMapping
+    public ResponseEntity<UserResponseDTO> createCustomer(@RequestBody UserRequestDTO userRequest) {
+        UserResponseDTO userResponse = userService.createCustomer(userRequest);
+        
+        return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
+    }
     
 }
