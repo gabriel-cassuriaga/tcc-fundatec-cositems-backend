@@ -1,5 +1,7 @@
 package com.cositems.api.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.cositems.api.dto.UserRequestDTO;
@@ -42,4 +44,11 @@ public class UserService {
         UserResponseDTO userResponse = new UserResponseDTO(seller);
         return userResponse;
     }
+
+    public List<UserResponseDTO> getAllUsers() {
+        return repository.findAll().stream()
+            .map(UserResponseDTO::new)
+            .toList();
+    }
+
 }
