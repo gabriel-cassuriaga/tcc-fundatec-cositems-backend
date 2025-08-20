@@ -37,5 +37,10 @@ public class UserController {
         
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
-    
+
+    @GetMapping
+    public ResponseEntity<List<UserResponseDTO>> getAll() {
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 }
