@@ -24,14 +24,14 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping
+    @PostMapping("/sellers")
     public ResponseEntity<UserResponseDTO> createSeller(@RequestBody UserRequestDTO userRequest) {
         UserResponseDTO userResponse = userService.createSeller(userRequest);
         
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
 
-        @PostMapping
+    @PostMapping("/customers")
     public ResponseEntity<UserResponseDTO> createCustomer(@RequestBody UserRequestDTO userRequest) {
         UserResponseDTO userResponse = userService.createCustomer(userRequest);
         
