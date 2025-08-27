@@ -1,5 +1,6 @@
 package com.cositems.api.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,27 +21,26 @@ import lombok.Setter;
 @Builder
 @Document(collection = "orders")
 public class Order {
-
     public enum OrderStatus {
-        PENDENTE,
-        PAGO,
-        ENVIADO
+        PENDING,
+        PAID,
+        SHIPPED
     }
 
     @Id
     private String id;
     private String userId;
-    private LocalDateTime data;
+    private LocalDateTime orderDate;
     private OrderStatus status;
-    private double total;
+    private BigDecimal total;
 
-    private List<OrderItem> itens;
+    private List<OrderItem> items;
 
     @Data
     public static class OrderItem {
         private String productId;
         private String name;
         private int quantity;
-        private double price;
+        private BigDecimal price;
     }
 }
