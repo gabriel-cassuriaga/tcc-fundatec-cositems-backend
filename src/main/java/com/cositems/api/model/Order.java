@@ -20,6 +20,13 @@ import lombok.Setter;
 @Builder
 @Document(collection = "orders")
 public class Order {
+
+    public enum OrderStatus {
+        PENDENTE,
+        PAGO,
+        ENVIADO
+    }
+
     @Id
     private String id;
     private String userId;
