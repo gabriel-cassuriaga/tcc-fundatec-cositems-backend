@@ -19,60 +19,55 @@ public class UserService {
     private final UserRepository repository;
 
     public UserResponseDTO createCustomer(UserRequestDTO userRequest) {
-        Customer customer = 
-        Customer.builder()
-            .username(userRequest.username())
-            .email(userRequest.email())
-            .password(userRequest.password())
-            .build();
+        Customer customer = Customer.builder()
+                .username(userRequest.username())
+                .email(userRequest.email())
+                .password(userRequest.password())
+                .build();
 
-        repository.save(customer);
+        Customer savedUser = repository.save(customer);
 
-        UserResponseDTO userResponse = new UserResponseDTO(customer);
-        return userResponse;
+        return new UserResponseDTO(savedUser);
 
     }
 
 
     public UserResponseDTO createSeller(UserRequestDTO userRequest) {
-        Seller seller = 
-        Seller.builder()
-            .username(userRequest.username())
-            .email(userRequest.email())
-            .password(userRequest.password())
-            .build();
+        Seller seller = Seller.builder()
+                .username(userRequest.username())
+                .email(userRequest.email())
+                .password(userRequest.password())
+                .build();
 
-        repository.save(seller);
+        Seller savedUser = repository.save(seller);
 
-        UserResponseDTO userResponse = new UserResponseDTO(seller);
-        return userResponse;
+        return new UserResponseDTO(savedUser);
 
     }
 
 
     public UserResponseDTO getUserById(String id) {
-        UserModel user = repository.findById(id).orElseThrow(() -> 
-            new RuntimeException("Usuário não encontrado"));
+        UserModel user = repository.findById(id).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        UserResponseDTO userResponse = new UserResponseDTO(user);
-        return userResponse;
+        return new UserResponseDTO(user);
 
     }
 
 
     public List<UserResponseDTO> getAllUsers() {
         return repository.findAll().stream()
-            .map(UserResponseDTO::new)
-            .toList();
+                .map(UserResponseDTO::new)
+                .toList();
 
     }
 
-
+    
     public void deleteUser(String id) {
-        UserModel user = repository.findById(id).orElseThrow(() -> 
-            new RuntimeException("Usuário não encontrado"));
-        
-        repository.delete(user);
+        if (!repository.existsById(id)) {
+            throw new RuntimeException("Usuário não encontrado com o id: " + id);
+        }
+
+        repository.deleteById(id);
 
     }
 
