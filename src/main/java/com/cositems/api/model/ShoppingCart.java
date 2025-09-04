@@ -28,8 +28,8 @@ public class ShoppingCart {
 
     @Data
     public class CartItem {
-    private String productId;
-    private int quantity;    
+        private String productId;
+        private int quantity;    
 
     }
 
