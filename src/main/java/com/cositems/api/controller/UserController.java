@@ -9,6 +9,8 @@ import com.cositems.api.dto.UserRequestDTO;
 import com.cositems.api.dto.UserResponseDTO;
 import com.cositems.api.service.UserService;
 
+import lombok.AllArgsConstructor;
+
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -17,16 +19,11 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-        
-    }
-
 
     @PostMapping("/sellers")
     public ResponseEntity<UserResponseDTO> createSeller(@RequestBody UserRequestDTO userRequest) {
