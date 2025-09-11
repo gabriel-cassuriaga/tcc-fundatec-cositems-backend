@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.cositems.api.dto.UserRequestDTO;
 import com.cositems.api.dto.UserResponseDTO;
+import com.cositems.api.enums.UserType;
 import com.cositems.api.service.UserService;
 
 import lombok.AllArgsConstructor;
@@ -27,7 +28,7 @@ public class UserController {
 
     @PostMapping("/sellers")
     public ResponseEntity<UserResponseDTO> createSeller(@RequestBody UserRequestDTO userRequest) {
-        UserResponseDTO userResponse = userService.createSeller(userRequest);
+        UserResponseDTO userResponse = userService.createUser(userRequest, UserType.SELLER);
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
 
     }
@@ -35,7 +36,7 @@ public class UserController {
 
     @PostMapping("/customers")
     public ResponseEntity<UserResponseDTO> createCustomer(@RequestBody UserRequestDTO userRequest) {
-        UserResponseDTO userResponse = userService.createCustomer(userRequest);
+        UserResponseDTO userResponse = userService.createUser(userRequest, UserType.CUSTOMER);
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
 
     }

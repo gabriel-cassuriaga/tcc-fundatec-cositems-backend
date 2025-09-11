@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.cositems.api.dto.UserRequestDTO;
 import com.cositems.api.dto.UserResponseDTO;
+import com.cositems.api.enums.UserType;
 import com.cositems.api.exception.BusinessRuleException;
 import com.cositems.api.exception.ResourceNotFoundException;
 import com.cositems.api.exception.ValidationException;
@@ -67,39 +68,30 @@ public class UserService {
     }
 
 
-    public UserResponseDTO createCustomer(UserRequestDTO userRequest) {
-
+     public UserResponseDTO createUser(UserRequestDTO userRequest, UserType userType) {
         validateUserRequest(userRequest);
         checkUniqueness(userRequest);
 
-        Customer customer = Customer.builder()
-                .username(userRequest.username())
-                .email(userRequest.email())
-                .password(userRequest.password())
-                .build();
+        UserModel userToSave;
 
-        Customer savedUser = repository.save(customer);
+        if (userType == UserType.CUSTOMER) {
+            userToSave = Customer.builder()
+                    .username(userRequest.username())
+                    .email(userRequest.email())
+                    .password(userRequest.password())
+                    .build();
+        } else if (userType == UserType.SELLER) {
+            userToSave = Seller.builder()
+                    .username(userRequest.username())
+                    .email(userRequest.email())
+                    .password(userRequest.password())
+                    .build();
+        } else {
+            throw new IllegalArgumentException("Tipo de usuário inválido: " + userType);
+        }
 
+        UserModel savedUser = repository.save(userToSave);
         return new UserResponseDTO(savedUser);
-
-    }
-
-
-    public UserResponseDTO createSeller(UserRequestDTO userRequest) {
-
-        validateUserRequest(userRequest);
-        checkUniqueness(userRequest);
-
-        Seller seller = Seller.builder()
-                .username(userRequest.username())
-                .email(userRequest.email())
-                .password(userRequest.password())
-                .build();
-
-        Seller savedUser = repository.save(seller);
-
-        return new UserResponseDTO(savedUser);
-
     }
 
 
@@ -128,5 +120,6 @@ public class UserService {
         repository.deleteById(id);
 
     }
+
 
 }
