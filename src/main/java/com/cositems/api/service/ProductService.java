@@ -1,11 +1,14 @@
 package com.cositems.api.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import com.cositems.api.dto.ProductRequestDTO;
 import com.cositems.api.dto.ProductResponseDTO;
+import com.cositems.api.exception.ResourceNotFoundException;
+import com.cositems.api.exception.ValidationException;
 import com.cositems.api.model.ProductModel;
 import com.cositems.api.repository.ProductRepository;
 
@@ -16,7 +19,19 @@ import lombok.AllArgsConstructor;
 public class ProductService {
     private final ProductRepository repository;
 
+    private void validateProductRequest(ProductRequestDTO productRequest) {
+        if (productRequest.name() == null || productRequest.name().isBlank()) {
+            throw new ValidationException("O nome do produto não pode ser vazio.");
+        }
+        if (productRequest.price() == null || productRequest.price().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ValidationException("O preço do produto deve ser um valor positivo.");
+        }
+    }
+
     public ProductResponseDTO createProduct(ProductRequestDTO productRequest) {
+
+        validateProductRequest(productRequest);
+
         ProductModel product = ProductModel.builder()
                 .name(productRequest.name())
                 .price(productRequest.price())
@@ -31,7 +46,7 @@ public class ProductService {
     
     public ProductResponseDTO getProductById(String id) {
         ProductModel product = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o id: " + id));
 
         return new ProductResponseDTO(product);
 
@@ -48,7 +63,7 @@ public class ProductService {
 
     public void deleteProduct(String id) {
         if (!repository.existsById(id)) {
-            throw new RuntimeException("Produto não encontrado com o id: " + id);
+            throw new ResourceNotFoundException("Produto não encontrado com o id: " + id);
         }
         repository.deleteById(id);
 
@@ -56,8 +71,11 @@ public class ProductService {
 
 
     public ProductResponseDTO updateProduct(String id, ProductRequestDTO productRequest) {
+
         ProductModel product = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o id: " + id));
+
+        validateProductRequest(productRequest);
 
         product.setName(productRequest.name());
         product.setPrice(productRequest.price());
