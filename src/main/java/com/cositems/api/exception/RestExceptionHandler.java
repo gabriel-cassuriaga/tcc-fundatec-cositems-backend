@@ -47,14 +47,26 @@ public class RestExceptionHandler {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponseDTO> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponseDTO> handleIllegalArgument(IllegalArgumentException ex,
+            HttpServletRequest request) {
         ErrorResponseDTO errorResponse = new ErrorResponseDTO(
-            Instant.now(),
-            HttpStatus.BAD_REQUEST.value(),
-            "Invalid Argument",
-            ex.getMessage(),
-            request.getRequestURI()
-        );
+                Instant.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Invalid Argument",
+                ex.getMessage(),
+                request.getRequestURI());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AuthorizationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAuthorization(AuthorizationException ex, HttpServletRequest request) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                Instant.now(),
+                HttpStatus.FORBIDDEN.value(),
+                "Forbidden",
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
 }
