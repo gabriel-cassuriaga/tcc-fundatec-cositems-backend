@@ -18,6 +18,7 @@ import lombok.Setter;
 public class ProductModel {
     @Id
     private String id;
+    private String sellerId;
     private String name;
     private String description;
     private BigDecimal price;

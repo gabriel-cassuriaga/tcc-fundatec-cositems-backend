@@ -4,10 +4,10 @@ import java.math.BigDecimal;
 
 import com.cositems.api.model.ProductModel;
 
-public record ProductResponseDTO(String id, String name, String description, BigDecimal price) {
+public record ProductResponseDTO(String id, String sellerId, String name, String description, BigDecimal price) {
     
     public ProductResponseDTO(ProductModel product) {
-        this(product.getId(), product.getName(), product.getDescription(), product.getPrice());
+        this(product.getId(), product.getSellerId(), product.getName(), product.getDescription(), product.getPrice());
     }
 
 
