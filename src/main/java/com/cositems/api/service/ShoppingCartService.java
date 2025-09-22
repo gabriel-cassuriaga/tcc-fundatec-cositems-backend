@@ -4,13 +4,14 @@ import com.cositems.api.dto.CartItemDTO;
 import com.cositems.api.dto.ShoppingCartResponseDTO;
 import com.cositems.api.model.ShoppingCart;
 import com.cositems.api.repository.ShoppingCartRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ShoppingCartService {
 
     private final ShoppingCartRepository cartRepository;
