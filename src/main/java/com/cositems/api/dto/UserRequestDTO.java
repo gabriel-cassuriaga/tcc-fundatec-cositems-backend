@@ -1,5 +1,5 @@
 package com.cositems.api.dto;
 
-public record UserRequestDTO(String username, String email, String password) {
+public record UserRequestDTO(String displayName, String email, String password) {
     
 }
