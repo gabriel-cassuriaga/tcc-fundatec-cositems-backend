@@ -3,7 +3,6 @@ package com.cositems.api.service;
 import java.util.List;
 import java.util.regex.Pattern;
 
-// 1. Importe o PasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,25 +22,23 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Service
 public class UserService {
-    private final UserRepository repository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     private void validateUserRequest(UserRequestDTO userRequest) {
+        if (userRequest.displayName() == null || userRequest.displayName().isBlank()) {
+            throw new ValidationException("O nome de usuário não pode ser vazio.");
+        }
 
-        //USERNAME PRECISA SER CORRIGIDO
-        // if (userRequest.username() == null || userRequest.username().isBlank()) {
-        //     throw new ValidationException("O nome de usuário não pode ser vazio.");
-        // }
+        if (userRequest.displayName().length() < 3 || userRequest.displayName().length() > 20) {
+            throw new ValidationException("O nome de usuário deve ter entre 3 e 20 caracteres.");
+        }
 
-        // if (userRequest.username().length() < 3 || userRequest.username().length() > 10) {
-        //     throw new ValidationException("O nome de usuário deve ter entre 3 e 10 caracteres.");
-        // }
-
-        // String usernameRegex = "^[a-zA-Z0-9_.-]+$";
-        // if (!Pattern.matches(usernameRegex, userRequest.username())) {
-        //     throw new ValidationException(
-        //             "O nome de usuário contém caracteres inválidos. Use apenas letras, números, underscore, hífen ou ponto.");
-        // }
+        String usernameRegex = "^[a-zA-Z0-9_.-]+$";
+        if (!Pattern.matches(usernameRegex, userRequest.displayName())) {
+            throw new ValidationException(
+                    "O nome de usuário contém caracteres inválidos. Use apenas letras, números, underscore, hífen ou ponto.");
+        }
 
         if (userRequest.email() == null || userRequest.email().isBlank()) {
             throw new ValidationException("O e-mail não pode ser vazio.");
@@ -63,10 +60,7 @@ public class UserService {
     }
 
     private void checkUniqueness(UserRequestDTO userRequest) {
-        // if (repository.findByUsername(userRequest.username()).isPresent()) {
-        //     throw new BusinessRuleException("O nome de usuário '" + userRequest.username() + "' já está em uso.");
-        // }
-        if (repository.findByEmail(userRequest.email()).isPresent()) {
+        if (userRepository.findByEmail(userRequest.email()).isPresent()) {
             throw new BusinessRuleException("O e-mail '" + userRequest.email() + "' já está em uso.");
         }
     }
@@ -81,13 +75,13 @@ public class UserService {
 
         if (userType == UserType.CUSTOMER) {
             userToSave = Customer.builder()
-                    // .username(userRequest.username())
+                    .displayName(userRequest.displayName())
                     .email(userRequest.email())
                     .password(hashedPassword)
                     .build();
         } else if (userType == UserType.SELLER) {
             userToSave = Seller.builder()
-                    // .username(userRequest.username())
+                    .displayName(userRequest.displayName())
                     .email(userRequest.email())
                     .password(hashedPassword)
                     .build();
@@ -95,26 +89,32 @@ public class UserService {
             throw new IllegalArgumentException("Tipo de usuário inválido: " + userType);
         }
 
-        UserModel savedUser = repository.save(userToSave);
+        UserModel savedUser = userRepository.save(userToSave);
         return new UserResponseDTO(savedUser);
     }
 
     public UserResponseDTO getUserById(String id) {
-        UserModel user = repository.findById(id)
+        UserModel user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o id: " + id));
+
         return new UserResponseDTO(user);
+
     }
 
     public List<UserResponseDTO> getAllUsers() {
-        return repository.findAll().stream()
+        return userRepository.findAll().stream()
                 .map(UserResponseDTO::new)
                 .toList();
+
     }
 
     public void deleteUser(String id) {
-        if (!repository.existsById(id)) {
+        if (!userRepository.existsById(id)) {
             throw new ResourceNotFoundException("Usuário não encontrado com o id: " + id);
         }
-        repository.deleteById(id);
+
+        userRepository.deleteById(id);
+
     }
+
 }
