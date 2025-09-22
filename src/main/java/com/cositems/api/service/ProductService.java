@@ -12,10 +12,10 @@ import com.cositems.api.exception.ValidationException;
 import com.cositems.api.model.ProductModel;
 import com.cositems.api.repository.ProductRepository;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ProductService {
     private final ProductRepository repository;
 
@@ -29,7 +29,6 @@ public class ProductService {
     }
 
     public ProductResponseDTO createProduct(ProductRequestDTO productRequest) {
-
         validateProductRequest(productRequest);
 
         ProductModel product = ProductModel.builder()
@@ -40,38 +39,28 @@ public class ProductService {
 
         ProductModel savedProduct = repository.save(product);
         return new ProductResponseDTO(savedProduct);
-
     }
 
-    
     public ProductResponseDTO getProductById(String id) {
         ProductModel product = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o id: " + id));
-
         return new ProductResponseDTO(product);
-
     }
-
 
     public List<ProductResponseDTO> getAllProducts() {
         return repository.findAll().stream()
                 .map(ProductResponseDTO::new)
                 .toList();
-
     }
-
 
     public void deleteProduct(String id) {
-        if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Produto não encontrado com o id: " + id);
-        }
-        repository.deleteById(id);
+        ProductModel product = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o id: " + id));
 
+        repository.deleteById(product.getId());
     }
 
-
     public ProductResponseDTO updateProduct(String id, ProductRequestDTO productRequest) {
-
         ProductModel product = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o id: " + id));
 
@@ -83,7 +72,5 @@ public class ProductService {
 
         ProductModel savedProduct = repository.save(product);
         return new ProductResponseDTO(savedProduct);
-
     }
-
 }
