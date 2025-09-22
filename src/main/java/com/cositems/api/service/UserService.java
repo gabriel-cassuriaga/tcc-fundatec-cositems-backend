@@ -3,6 +3,8 @@ package com.cositems.api.service;
 import java.util.List;
 import java.util.regex.Pattern;
 
+// 1. Importe o PasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.cositems.api.dto.UserRequestDTO;
@@ -22,21 +24,24 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class UserService {
     private final UserRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
     private void validateUserRequest(UserRequestDTO userRequest) {
-        if (userRequest.username() == null || userRequest.username().isBlank()) {
-            throw new ValidationException("O nome de usuário não pode ser vazio.");
-        }
 
-        if (userRequest.username().length() < 3 || userRequest.username().length() > 10) {
-            throw new ValidationException("O nome de usuário deve ter entre 3 e 10 caracteres.");
-        }
+        //USERNAME PRECISA SER CORRIGIDO
+        // if (userRequest.username() == null || userRequest.username().isBlank()) {
+        //     throw new ValidationException("O nome de usuário não pode ser vazio.");
+        // }
 
-        String usernameRegex = "^[a-zA-Z0-9_.-]+$";
-        if (!Pattern.matches(usernameRegex, userRequest.username())) {
-            throw new ValidationException(
-                    "O nome de usuário contém caracteres inválidos. Use apenas letras, números, underscore, hífen ou ponto.");
-        }
+        // if (userRequest.username().length() < 3 || userRequest.username().length() > 10) {
+        //     throw new ValidationException("O nome de usuário deve ter entre 3 e 10 caracteres.");
+        // }
+
+        // String usernameRegex = "^[a-zA-Z0-9_.-]+$";
+        // if (!Pattern.matches(usernameRegex, userRequest.username())) {
+        //     throw new ValidationException(
+        //             "O nome de usuário contém caracteres inválidos. Use apenas letras, números, underscore, hífen ou ponto.");
+        // }
 
         if (userRequest.email() == null || userRequest.email().isBlank()) {
             throw new ValidationException("O e-mail não pode ser vazio.");
@@ -58,33 +63,33 @@ public class UserService {
     }
 
     private void checkUniqueness(UserRequestDTO userRequest) {
-        if (repository.findByUsername(userRequest.username()).isPresent()) {
-            throw new BusinessRuleException("O nome de usuário '" + userRequest.username() + "' já está em uso.");
-        }
-
+        // if (repository.findByUsername(userRequest.username()).isPresent()) {
+        //     throw new BusinessRuleException("O nome de usuário '" + userRequest.username() + "' já está em uso.");
+        // }
         if (repository.findByEmail(userRequest.email()).isPresent()) {
             throw new BusinessRuleException("O e-mail '" + userRequest.email() + "' já está em uso.");
         }
     }
 
-
-     public UserResponseDTO createUser(UserRequestDTO userRequest, UserType userType) {
+    public UserResponseDTO createUser(UserRequestDTO userRequest, UserType userType) {
         validateUserRequest(userRequest);
         checkUniqueness(userRequest);
+
+        String hashedPassword = passwordEncoder.encode(userRequest.password());
 
         UserModel userToSave;
 
         if (userType == UserType.CUSTOMER) {
             userToSave = Customer.builder()
-                    .username(userRequest.username())
+                    // .username(userRequest.username())
                     .email(userRequest.email())
-                    .password(userRequest.password())
+                    .password(hashedPassword)
                     .build();
         } else if (userType == UserType.SELLER) {
             userToSave = Seller.builder()
-                    .username(userRequest.username())
+                    // .username(userRequest.username())
                     .email(userRequest.email())
-                    .password(userRequest.password())
+                    .password(hashedPassword)
                     .build();
         } else {
             throw new IllegalArgumentException("Tipo de usuário inválido: " + userType);
@@ -94,32 +99,22 @@ public class UserService {
         return new UserResponseDTO(savedUser);
     }
 
-
     public UserResponseDTO getUserById(String id) {
         UserModel user = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o id: " + id));
-
         return new UserResponseDTO(user);
-
     }
-
 
     public List<UserResponseDTO> getAllUsers() {
         return repository.findAll().stream()
                 .map(UserResponseDTO::new)
                 .toList();
-
     }
-
 
     public void deleteUser(String id) {
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("Usuário não encontrado com o id: " + id);
         }
-
         repository.deleteById(id);
-
     }
-
-
 }
