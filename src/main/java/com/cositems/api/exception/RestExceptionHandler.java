@@ -69,4 +69,17 @@ public class RestExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponseDTO> handleBadCredentials(BadCredentialsException ex,
+            HttpServletRequest request) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                Instant.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                "Authentication Failed",
+                "E-mail ou senha inválidos.",
+                request.getRequestURI());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
 }
