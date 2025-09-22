@@ -20,10 +20,10 @@ public class TokenService {
     private final SecurityProperties securityProperties;
 
     private Algorithm getAlgorithm() {
-        return switch (securityProperties.algorithm().toUpperCase()) {
-            case "HS512" -> Algorithm.HMAC512(securityProperties.secret());
-            case "HS384" -> Algorithm.HMAC384(securityProperties.secret());
-            default -> Algorithm.HMAC256(securityProperties.secret());
+        return switch (securityProperties.token().algorithm().toUpperCase()) {
+            case "HS512" -> Algorithm.HMAC512(securityProperties.token().secret());
+            case "HS384" -> Algorithm.HMAC384(securityProperties.token().secret());
+            default -> Algorithm.HMAC256(securityProperties.token().secret());
         };
     }
 
@@ -57,7 +57,7 @@ public class TokenService {
 
     private Instant generateExpirationDate() {
         return LocalDateTime.now()
-                .plusHours(securityProperties.expirationHours())
+                .plusHours(securityProperties.token().expirationHours())
                 .atZone(ZoneId.systemDefault())
                 .toInstant();
     }

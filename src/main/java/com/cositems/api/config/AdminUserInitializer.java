@@ -1,0 +1,37 @@
+package com.cositems.api.config;
+
+import com.cositems.api.model.Admin;
+import com.cositems.api.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class AdminUserInitializer implements CommandLineRunner {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Value("${application.security.admin-password}")
+    private String adminPassword;
+
+    @Override
+    public void run(String... args) throws Exception {
+        final String adminEmail = "admin@cositems.com";
+
+        if (userRepository.findByEmail(adminEmail).isEmpty()) {
+            
+            Admin adminUser = Admin.builder()
+                    .displayName("Admin Cositems")
+                    .email(adminEmail)
+                    .password(passwordEncoder.encode(adminPassword)) 
+                    .build();
+
+            userRepository.save(adminUser);
+            System.out.println("Usuário ADMIN padrão criado com sucesso!");
+        }
+    }
+}

@@ -34,6 +34,8 @@ public class UserModel implements UserDetails {
             return List.of(new SimpleGrantedAuthority("ROLE_SELLER"));
         } else if (this instanceof Customer) {
             return List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
+        } else if(this instanceof Admin) {
+            return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
 
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
