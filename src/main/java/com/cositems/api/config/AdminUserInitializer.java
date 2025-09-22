@@ -3,7 +3,6 @@ package com.cositems.api.config;
 import com.cositems.api.model.Admin;
 import com.cositems.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -14,9 +13,7 @@ public class AdminUserInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    @Value("${application.security.admin-password}")
-    private String adminPassword;
+    private final SecurityProperties securityProperties;
 
     @Override
     public void run(String... args) throws Exception {
@@ -24,6 +21,8 @@ public class AdminUserInitializer implements CommandLineRunner {
 
         if (userRepository.findByEmail(adminEmail).isEmpty()) {
             
+            String adminPassword = securityProperties.admin().password();
+
             Admin adminUser = Admin.builder()
                     .displayName("Admin Cositems")
                     .email(adminEmail)
