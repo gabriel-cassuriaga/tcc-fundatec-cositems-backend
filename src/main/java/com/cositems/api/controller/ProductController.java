@@ -5,14 +5,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cositems.api.dto.ProductRequestDTO;
 import com.cositems.api.dto.ProductResponseDTO;
+import com.cositems.api.model.UserModel;
 import com.cositems.api.service.ProductService;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,19 +23,23 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/products")
 public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    public ResponseEntity<ProductResponseDTO> createProduct(@RequestBody ProductRequestDTO productRequest) {
-        ProductResponseDTO productResponse = productService.createProduct(productRequest);
-        
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<ProductResponseDTO> createProduct(@RequestBody ProductRequestDTO productRequest,
+            Authentication authentication) {
+        UserModel loggedInSeller = (UserModel) authentication.getPrincipal();
+        String loggedInSellerId = loggedInSeller.getId();
+
+        ProductResponseDTO productResponse = productService.createProduct(productRequest, loggedInSellerId);
+
         return new ResponseEntity<>(productResponse, HttpStatus.CREATED);
     }
-    
 
     @GetMapping
     public ResponseEntity<List<ProductResponseDTO>> getAll() {
@@ -41,7 +48,6 @@ public class ProductController {
 
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable String id) {
         ProductResponseDTO productResponse = productService.getProductById(id);
@@ -49,17 +55,24 @@ public class ProductController {
 
     }
 
-
     @PutMapping("/{id}")
-    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable String id, @RequestBody ProductRequestDTO productRequest) {
-        ProductResponseDTO productResponse = productService.updateProduct(id, productRequest);
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable String id,
+            @RequestBody ProductRequestDTO productRequest, Authentication authentication) {
+        UserModel loggedInSeller = (UserModel) authentication.getPrincipal();
+        String loggedInSellerId = loggedInSeller.getId();
+
+        ProductResponseDTO productResponse = productService.updateProduct(id, productRequest, loggedInSellerId);
         return new ResponseEntity<>(productResponse, HttpStatus.OK);
     }
 
-
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
-        productService.deleteProduct(id);
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<Void> deleteProduct(@PathVariable String productId, Authentication authentication) {
+        UserModel loggedInUser = (UserModel) authentication.getPrincipal();
+        String loggedInSellerId = loggedInUser.getId();
+
+        productService.deleteProduct(productId, loggedInSellerId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 
     }
