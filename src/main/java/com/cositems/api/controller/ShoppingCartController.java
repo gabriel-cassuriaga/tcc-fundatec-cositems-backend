@@ -1,12 +1,14 @@
 package com.cositems.api.controller;
 
-import com.cositems.api.dto.CartItemDTO;
+import com.cositems.api.dto.CartItemRequestDTO;
 import com.cositems.api.dto.ShoppingCartResponseDTO;
+import com.cositems.api.model.UserModel;
 import com.cositems.api.service.ShoppingCartService;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,29 +18,41 @@ public class ShoppingCartController {
 
     private final ShoppingCartService cartService;
 
-    @GetMapping("/{customerId}")
-    public ResponseEntity<ShoppingCartResponseDTO> getMyCart(@PathVariable String customerId) {
-        ShoppingCartResponseDTO cart = cartService.getCartByCustomerId(customerId);
-        return new ResponseEntity<>(cart, HttpStatus.OK);
+    private UserModel getLoggedInUser(Authentication authentication) {
+        return (UserModel) authentication.getPrincipal();
     }
 
-    @PostMapping("/{customerId}/items")
-    public ResponseEntity<ShoppingCartResponseDTO> addItemToMyCart(@PathVariable String customerId,
-            @RequestBody CartItemDTO itemDto) {
-        ShoppingCartResponseDTO cart = cartService.addItemToCart(customerId, itemDto);
-        return new ResponseEntity<>(cart, HttpStatus.OK);
+    @GetMapping
+    @PreAuthorize("hasRole('CUSTOMER')") // Apenas clientes têm carrinho de compras
+    public ResponseEntity<ShoppingCartResponseDTO> getMyCart(Authentication authentication) {
+        ShoppingCartResponseDTO cart = cartService.getCart(getLoggedInUser(authentication));
+        return ResponseEntity.ok(cart);
     }
 
-    @DeleteMapping("/{customerId}/items/{productId}")
-    public ResponseEntity<ShoppingCartResponseDTO> removeItemFromMyCart(@PathVariable String customerId,
-            @PathVariable String productId) {
-        ShoppingCartResponseDTO cart = cartService.removeItemFromCart(customerId, productId);
-        return new ResponseEntity<>(cart, HttpStatus.OK);
+    @PostMapping("/items")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<ShoppingCartResponseDTO> addItemToMyCart(
+            @RequestBody CartItemRequestDTO itemDto,
+            Authentication authentication
+    ) {
+        ShoppingCartResponseDTO cart = cartService.addItemToCart(getLoggedInUser(authentication), itemDto);
+        return ResponseEntity.ok(cart);
     }
 
-    @DeleteMapping("/{customerId}/items")
-    public ResponseEntity<ShoppingCartResponseDTO> clearMyCart(@PathVariable String customerId) {
-        ShoppingCartResponseDTO cart = cartService.clearCart(customerId);
-        return new ResponseEntity<>(cart, HttpStatus.OK);
+    @DeleteMapping("/items/{productId}")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<ShoppingCartResponseDTO> removeItemFromMyCart(
+            @PathVariable String productId,
+            Authentication authentication
+    ) {
+        ShoppingCartResponseDTO cart = cartService.removeItemFromCart(getLoggedInUser(authentication), productId);
+        return ResponseEntity.ok(cart);
+    }
+
+    @DeleteMapping
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<ShoppingCartResponseDTO> clearMyCart(Authentication authentication) {
+        ShoppingCartResponseDTO cart = cartService.clearCart(getLoggedInUser(authentication));
+        return ResponseEntity.ok(cart);
     }
 }
