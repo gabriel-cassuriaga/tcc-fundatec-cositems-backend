@@ -1,5 +1,6 @@
 package com.cositems.api.model;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,10 +28,14 @@ public class ShoppingCart {
     private List<CartItem> cartItems = new ArrayList<>();
 
     @Data
-    public class CartItem {
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class CartItem {
         private String productId;
-        private int quantity;    
-
+        private String name;
+        private BigDecimal price;
+        private int quantity;
     }
 
 }
