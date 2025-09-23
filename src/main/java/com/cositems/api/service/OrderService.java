@@ -12,10 +12,12 @@ import com.cositems.api.model.ProductModel;
 import com.cositems.api.model.UserModel;
 import com.cositems.api.repository.OrderRepository;
 import com.cositems.api.repository.ProductRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,116 +29,110 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
 
-    public OrderResponseDTO createOrder(OrderRequestDTO orderRequest, UserModel loggedInUser) {
+    @Transactional
+    public OrderResponseDTO createOrder(OrderRequestDTO orderRequest, String loggedInUserId) {
+
         if (orderRequest.items() == null || orderRequest.items().isEmpty()) {
             throw new ValidationException("O pedido deve conter pelo menos um item.");
         }
 
         List<Order.OrderItem> orderItems = orderRequest.items().stream()
                 .map(itemDto -> {
+
                     ProductModel product = productRepository.findById(itemDto.productId())
-                            .orElseThrow(() -> new ResourceNotFoundException("Produto com id " + itemDto.productId() + " não encontrado."));
+                            .orElseThrow(() -> new ResourceNotFoundException(
+                                    "Produto com id " + itemDto.productId() + " não encontrado."));
 
                     if (product.getQuantity() < itemDto.quantity()) {
                         throw new BusinessRuleException("Estoque insuficiente para o produto: " + product.getName());
                     }
-                    
+
                     product.setQuantity(product.getQuantity() - itemDto.quantity());
                     productRepository.save(product);
 
-                    Order.OrderItem item = new Order.OrderItem();
-                    item.setProductId(product.getId());
-                    item.setName(product.getName());
-                    item.setQuantity(itemDto.quantity());
-                    item.setPrice(product.getPrice());
-                    return item;
+                    return Order.OrderItem.builder()
+                            .productId(product.getId())
+                            .name(product.getName())
+                            .quantity(itemDto.quantity())
+                            .price(product.getPrice())
+                            .build();
+
                 }).collect(Collectors.toList());
 
-        BigDecimal total = orderItems.stream()
-                .map(item -> item.getPrice().multiply(new BigDecimal(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
         Order order = Order.builder()
-                .userId(loggedInUser.getId())
+                .userId(loggedInUserId)
                 .orderDate(LocalDateTime.now())
                 .status(OrderStatus.PENDING)
                 .items(orderItems)
-                .total(total)
+                .total(Order.calculateTotal(orderItems))
                 .build();
 
         Order savedOrder = orderRepository.save(order);
         return new OrderResponseDTO(savedOrder);
+
     }
 
     public List<OrderResponseDTO> getAllOrders() {
-        return orderRepository.findAll().stream()
-                .map(OrderResponseDTO::new)
-                .toList();
+        return orderRepository.findAll().stream().map(OrderResponseDTO::new).toList();
     }
-    
+
     public OrderResponseDTO getOrderById(String id, UserModel loggedInUser) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o id: " + id));
 
-        boolean isOwner = order.getUserId().equals(loggedInUser.getId());
-        boolean isAdmin = loggedInUser.getAuthorities().stream()
-                .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
-
-        if (!isOwner && !isAdmin) {
-            throw new AuthorizationException("Você не tem permissão para visualizar este pedido.");
-        }
+        validateOwnershipOrAdmin(order, loggedInUser);
 
         return new OrderResponseDTO(order);
+
     }
-    
+
+    @Transactional
     public OrderResponseDTO markAsPaid(String id) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Pedido не encontrado com o id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o id: " + id));
 
-        if (order.getStatus() != OrderStatus.PENDING) {
-            throw new BusinessRuleException("Apenas pedidos pendentes podem ser marcados como pagos. Status atual: " + order.getStatus());
-        }
+        order.markAsPaid();
 
-        order.setStatus(OrderStatus.PAID);
-        return new OrderResponseDTO(orderRepository.save(order));
+        Order updatedOrder = orderRepository.save(order);
+
+        return new OrderResponseDTO(updatedOrder);
+
     }
 
+    @Transactional
     public OrderResponseDTO markAsShipped(String id) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Pedido не encontrado com o id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o id: " + id));
 
-        if (order.getStatus() != OrderStatus.PAID) {
-            throw new BusinessRuleException("Apenas pedidos pagos podem ser marcados como enviados. Status atual: " + order.getStatus());
-        }
+        order.markAsShipped();
 
-        order.setStatus(OrderStatus.SHIPPED);
-        return new OrderResponseDTO(orderRepository.save(order));
+        Order updatedOrder = orderRepository.save(order);
+
+        return new OrderResponseDTO(updatedOrder);
+
     }
-    
+
+    @Transactional
     public OrderResponseDTO cancelOrder(String id, UserModel loggedInUser) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Pedido не encontrado com o id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o id: " + id));
 
-        boolean isOwner = order.getUserId().equals(loggedInUser.getId());
-        boolean isAdmin = loggedInUser.getAuthorities().stream()
-                .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
+        validateOwnershipOrAdmin(order, loggedInUser);
 
-        if (!isOwner && !isAdmin) {
-            throw new AuthorizationException("Você não tem permissão para cancelar este pedido.");
-        }
+        order.cancel();
+        Order updatedOrder = orderRepository.save(order);
 
-        if (order.getStatus() != OrderStatus.PENDING) {
-            throw new BusinessRuleException("Apenas pedidos pendentes podem ser cancelados. Status atual: " + order.getStatus());
-        }
-        
-        for (Order.OrderItem item : order.getItems()) {
-            productRepository.findById(item.getProductId()).ifPresent(product -> {
-                product.setQuantity(product.getQuantity() + item.getQuantity());
-                productRepository.save(product);
-            });
-        }
+        return new OrderResponseDTO(updatedOrder);
 
-        order.setStatus(OrderStatus.CANCELLED);
-        return new OrderResponseDTO(orderRepository.save(order));
     }
+
+    private void validateOwnershipOrAdmin(Order order, UserModel user) {
+        boolean isOwner = order.getUserId().equals(user.getId());
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
+        if (!isOwner && !isAdmin) {
+            throw new AuthorizationException("Você não tem permissão para acessar este pedido.");
+        }
+    }
+
 }
