@@ -29,15 +29,18 @@ import org.springframework.web.bind.annotation.PutMapping;
 public class ProductController {
     private final ProductService productService;
 
+    private String getLoggedInUserId(Authentication authentication) {
+        UserModel user = (UserModel) authentication.getPrincipal();
+        return user.getId();
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<ProductResponseDTO> createProduct(@RequestBody ProductRequestDTO productRequest,
             Authentication authentication) {
-        UserModel loggedInSeller = (UserModel) authentication.getPrincipal();
-        String loggedInSellerId = loggedInSeller.getId();
-
+        String loggedInSellerId = getLoggedInUserId(authentication);
+        
         ProductResponseDTO productResponse = productService.createProduct(productRequest, loggedInSellerId);
-
         return new ResponseEntity<>(productResponse, HttpStatus.CREATED);
     }
 
@@ -59,8 +62,7 @@ public class ProductController {
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable String id,
             @RequestBody ProductRequestDTO productRequest, Authentication authentication) {
-        UserModel loggedInSeller = (UserModel) authentication.getPrincipal();
-        String loggedInSellerId = loggedInSeller.getId();
+        String loggedInSellerId = getLoggedInUserId(authentication);
 
         ProductResponseDTO productResponse = productService.updateProduct(id, productRequest, loggedInSellerId);
         return new ResponseEntity<>(productResponse, HttpStatus.OK);
@@ -69,8 +71,7 @@ public class ProductController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<Void> deleteProduct(@PathVariable String productId, Authentication authentication) {
-        UserModel loggedInUser = (UserModel) authentication.getPrincipal();
-        String loggedInSellerId = loggedInUser.getId();
+        String loggedInSellerId = getLoggedInUserId(authentication);
 
         productService.deleteProduct(productId, loggedInSellerId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
