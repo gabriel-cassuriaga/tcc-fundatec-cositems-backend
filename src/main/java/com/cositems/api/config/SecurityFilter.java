@@ -1,8 +1,17 @@
 package com.cositems.api.config;
 
+import java.io.IOException;
+import java.time.Instant;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.cositems.api.auth.service.AuthenticationService;
+import com.cositems.api.auth.service.TokenService;
 import com.cositems.api.exception.ErrorResponseDTO;
-import com.cositems.api.service.AuthenticationService;
-import com.cositems.api.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.FilterChain;
@@ -11,15 +20,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
@@ -78,5 +78,4 @@ public class SecurityFilter extends OncePerRequestFilter {
         }
         return null;
     }
-
 }
