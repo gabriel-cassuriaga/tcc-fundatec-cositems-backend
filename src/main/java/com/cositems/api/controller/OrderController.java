@@ -56,6 +56,15 @@ public class OrderController {
 
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @GetMapping("/my-orders")
+    public ResponseEntity<List<OrderResponseDTO>> getUserOrders(Authentication authentication) {
+        String loggedInCustomerId = getLoggedInUserId(authentication);
+        List<OrderResponseDTO> orders = orderService.getUserOrders(loggedInCustomerId);
+        return new ResponseEntity<>(orders, HttpStatus.OK);
+
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/pay")
     public ResponseEntity<OrderResponseDTO> markAsPaid(@PathVariable String orderId) {
