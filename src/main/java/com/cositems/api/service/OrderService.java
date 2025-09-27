@@ -135,4 +135,12 @@ public class OrderService {
         }
     }
 
+    public List<OrderResponseDTO> getUserOrders(String loggedInCustomerId) {
+        List<Order> orders = orderRepository.findByUserId(loggedInCustomerId);
+
+        return orders.stream()
+                    .map(OrderResponseDTO::new)
+                    .toList();
+    }
+
 }
