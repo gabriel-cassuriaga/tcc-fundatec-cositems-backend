@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.cositems.api.exception.AuthorizationException;
 import com.cositems.api.exception.BusinessRuleException;
 import com.cositems.api.exception.ResourceNotFoundException;
-import com.cositems.api.exception.ValidationException;
 import com.cositems.api.order.dto.OrderRequestDTO;
 import com.cositems.api.order.dto.OrderResponseDTO;
 import com.cositems.api.order.enums.OrderStatus;
@@ -32,10 +31,6 @@ public class OrderService {
 
     @Transactional
     public OrderResponseDTO createOrder(OrderRequestDTO orderRequest, String loggedInUserId) {
-
-        if (orderRequest.items() == null || orderRequest.items().isEmpty()) {
-            throw new ValidationException("O pedido deve conter pelo menos um item.");
-        }
 
         List<OrderItem> orderItems = orderRequest.items().stream()
                 .map(itemDto -> {

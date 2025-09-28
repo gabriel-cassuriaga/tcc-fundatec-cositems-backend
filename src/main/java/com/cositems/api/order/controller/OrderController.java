@@ -19,6 +19,7 @@ import com.cositems.api.order.dto.OrderResponseDTO;
 import com.cositems.api.order.service.OrderService;
 import com.cositems.api.user.model.User;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -35,7 +36,7 @@ public class OrderController {
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping
-    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO orderRequest,
+    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody @Valid OrderRequestDTO orderRequest,
             Authentication authentication) {
         String loggedInCustomerId = getLoggedInUserId(authentication);
 
