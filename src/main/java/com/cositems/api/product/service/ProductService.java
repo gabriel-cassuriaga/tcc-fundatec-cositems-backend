@@ -1,7 +1,7 @@
 package com.cositems.api.product.service;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.cositems.api.exception.AuthorizationException;
@@ -46,11 +46,9 @@ public class ProductService {
 
     }
 
-    public List<ProductResponseDTO> getAllProducts() {
-        return productRepository.findAll().stream()
-                .map(ProductResponseDTO::new)
-                .toList();
-
+    public Page<ProductResponseDTO> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable)
+                .map(ProductResponseDTO::new);
     }
 
     public void deleteProduct(String productId, String loggedInSellerId) {

@@ -1,7 +1,7 @@
 package com.cositems.api.product.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -45,10 +45,9 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductResponseDTO>> getAll() {
-        List<ProductResponseDTO> products = productService.getAllProducts();
-        return new ResponseEntity<>(products, HttpStatus.OK);
-
+    public ResponseEntity<Page<ProductResponseDTO>> getAll(Pageable pageable) {
+        Page<ProductResponseDTO> productsPage = productService.getAllProducts(pageable);
+        return new ResponseEntity<>(productsPage, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
