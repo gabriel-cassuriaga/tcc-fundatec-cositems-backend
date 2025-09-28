@@ -1,6 +1,7 @@
 package com.cositems.api.order.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,10 +32,10 @@ public class OrderService {
 
     @Transactional
     public OrderResponseDTO createOrder(OrderRequestDTO orderRequest, String loggedInUserId) {
+        List<Product> productsToUpdate = new ArrayList<>();
 
         List<OrderItem> orderItems = orderRequest.items().stream()
                 .map(itemDto -> {
-
                     Product product = productRepository.findById(itemDto.productId())
                             .orElseThrow(() -> new ResourceNotFoundException(
                                     "Produto com id " + itemDto.productId() + " não encontrado."));
@@ -44,7 +45,7 @@ public class OrderService {
                     }
 
                     product.setQuantity(product.getQuantity() - itemDto.quantity());
-                    productRepository.save(product);
+                    productsToUpdate.add(product);
 
                     return OrderItem.builder()
                             .productId(product.getId())
@@ -52,8 +53,9 @@ public class OrderService {
                             .quantity(itemDto.quantity())
                             .price(product.getPrice())
                             .build();
-
                 }).collect(Collectors.toList());
+
+        productRepository.saveAll(productsToUpdate);
 
         Order order = Order.builder()
                 .userId(loggedInUserId)
@@ -65,7 +67,6 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
         return new OrderResponseDTO(savedOrder);
-
     }
 
     public List<OrderResponseDTO> getAllOrders() {
