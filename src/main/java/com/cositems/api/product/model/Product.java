@@ -19,8 +19,8 @@ import lombok.Setter;
 public class Product {
     @Id
     private String id;
-    private String sellerId;
     private String name;
+    private String sellerId;
     private String description;
     private BigDecimal price;
     private int quantity;

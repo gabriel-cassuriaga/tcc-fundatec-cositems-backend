@@ -31,6 +31,7 @@ public class ProductService {
                 .sellerId(loggedInSellerId)
                 .price(productRequest.price())
                 .description(productRequest.description())
+                .quantity(productRequest.quantity())
                 .build();
 
         Product savedProduct = productRepository.save(product);
@@ -82,6 +83,7 @@ public class ProductService {
         product.setName(productRequest.name());
         product.setPrice(productRequest.price());
         product.setDescription(productRequest.description());
+        product.setQuantity(productRequest.quantity());
 
         Product savedProduct = productRepository.save(product);
         return new ProductResponseDTO(savedProduct);

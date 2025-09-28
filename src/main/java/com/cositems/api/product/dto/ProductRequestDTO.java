@@ -17,5 +17,7 @@ public record ProductRequestDTO(
         BigDecimal price,
 
         @Size(max = 500, message = "A descrição não pode exceder 500 caracteres.")
-        String description) {
+        String description,
+        
+        int quantity) {
 }
