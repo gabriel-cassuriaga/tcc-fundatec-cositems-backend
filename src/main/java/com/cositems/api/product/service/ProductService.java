@@ -70,9 +70,16 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o id: " + id));
 
-        if (productRepository.findBySellerIdAndName(loggedInSellerId, productRequest.name()).isPresent()) {
-            throw new BusinessRuleException("Você já possui um produto cadastrado com este nome.");
+        if (!product.getSellerId().equals(loggedInSellerId)) {
+            throw new AuthorizationException("Você não tem permissão para editar este produto.");
         }
+
+        productRepository.findBySellerIdAndName(loggedInSellerId, productRequest.name())
+                .ifPresent(existingProduct -> {
+                    if (!existingProduct.getId().equals(id)) {
+                        throw new BusinessRuleException("Você já possui outro produto cadastrado com este nome.");
+                    }
+                });
 
         product.setName(productRequest.name());
         product.setPrice(productRequest.price());
