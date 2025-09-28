@@ -42,15 +42,10 @@ public class UserController {
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
 
-    @PostMapping("/register/seller")
-    public ResponseEntity<UserResponseDTO> createSeller(@RequestBody @Valid UserRequestDTO userRequest) {
-        UserResponseDTO userResponse = userService.createUser(userRequest, UserType.SELLER);
-        return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
-    }
-
-    @PostMapping("/register/customer")
-    public ResponseEntity<UserResponseDTO> createCustomer(@RequestBody @Valid UserRequestDTO userRequest) {
-        UserResponseDTO userResponse = userService.createUser(userRequest, UserType.CUSTOMER);
+    @PostMapping("/register/{userType}")
+    public ResponseEntity<UserResponseDTO> createUser(@RequestBody @Valid UserRequestDTO userRequest,
+            @PathVariable UserType userType) {
+        UserResponseDTO userResponse = userService.createUser(userRequest, userType);
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
 
