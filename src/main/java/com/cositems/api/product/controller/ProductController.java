@@ -59,7 +59,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('SELLER')")
+    @PreAuthorize("hasRole('SELLER') and @productService.isProductOwner(#id, authentication.principal.id)")
     public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable String id,
             @RequestBody @Valid ProductRequestDTO productRequest, Authentication authentication) {
         String loggedInSellerId = getLoggedInUserId(authentication);
@@ -69,11 +69,11 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('SELLER')")
-    public ResponseEntity<Void> deleteProduct(@PathVariable String productId, Authentication authentication) {
+    @PreAuthorize("hasRole('SELLER') and @productService.isProductOwner(#id, authentication.principal.id)")
+    public ResponseEntity<Void> deleteProduct(@PathVariable String id, Authentication authentication) {
         String loggedInSellerId = getLoggedInUserId(authentication);
 
-        productService.deleteProduct(productId, loggedInSellerId);
+        productService.deleteProduct(id, loggedInSellerId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 
     }
