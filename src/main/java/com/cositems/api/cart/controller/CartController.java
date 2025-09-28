@@ -16,6 +16,7 @@ import com.cositems.api.cart.dto.CartResponseDTO;
 import com.cositems.api.cart.service.CartService;
 import com.cositems.api.user.model.User;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -38,8 +39,7 @@ public class CartController {
 
     @PostMapping("/items")
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ResponseEntity<CartResponseDTO> addItemToMyCart(
-            @RequestBody CartItemRequestDTO itemDto,
+    public ResponseEntity<CartResponseDTO> addItemToMyCart(@RequestBody @Valid CartItemRequestDTO itemDto,
             Authentication authentication) {
         CartResponseDTO cart = cartService.addItemToCart(getLoggedInUser(authentication), itemDto);
         return ResponseEntity.ok(cart);
@@ -47,8 +47,7 @@ public class CartController {
 
     @DeleteMapping("/items/{productId}")
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ResponseEntity<CartResponseDTO> removeItemFromMyCart(
-            @PathVariable String productId,
+    public ResponseEntity<CartResponseDTO> removeItemFromMyCart(@PathVariable String productId,
             Authentication authentication) {
         CartResponseDTO cart = cartService.removeItemFromCart(getLoggedInUser(authentication), productId);
         return ResponseEntity.ok(cart);

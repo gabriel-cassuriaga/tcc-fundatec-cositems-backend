@@ -10,7 +10,6 @@ import com.cositems.api.cart.model.Cart;
 import com.cositems.api.cart.model.CartItem;
 import com.cositems.api.cart.repository.CartRepository;
 import com.cositems.api.exception.ResourceNotFoundException;
-import com.cositems.api.exception.ValidationException;
 import com.cositems.api.product.model.Product;
 import com.cositems.api.product.repository.ProductRepository;
 import com.cositems.api.user.model.User;
@@ -30,9 +29,6 @@ public class CartService {
     }
 
     public CartResponseDTO addItemToCart(User loggedInUser, CartItemRequestDTO itemDto) {
-        if (itemDto.quantity() <= 0) {
-            throw new ValidationException("A quantidade do item deve ser um valor positivo.");
-        }
 
         Product product = productRepository.findById(itemDto.productId())
                 .orElseThrow(() -> new ResourceNotFoundException(
