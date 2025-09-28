@@ -13,4 +13,7 @@ import lombok.experimental.SuperBuilder;
 @Document(collection = "users")
 @TypeAlias("admin")
 public class Admin extends User {
+    public Admin() {
+        super();
+    }
 }
