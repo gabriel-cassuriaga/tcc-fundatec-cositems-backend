@@ -1,10 +1,13 @@
 package com.cositems.api.exception;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -23,17 +26,6 @@ public class RestExceptionHandler {
                                 ex.getMessage(),
                                 request.getRequestURI());
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
-        }
-
-        @ExceptionHandler(ValidationException.class)
-        public ResponseEntity<ErrorResponseDTO> handleValidation(ValidationException ex, HttpServletRequest request) {
-                ErrorResponseDTO errorResponse = new ErrorResponseDTO(
-                                Instant.now(),
-                                HttpStatus.BAD_REQUEST.value(),
-                                "Validation Error",
-                                ex.getMessage(),
-                                request.getRequestURI());
-                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
 
         @ExceptionHandler(BusinessRuleException.class)
@@ -98,4 +90,15 @@ public class RestExceptionHandler {
 
                 return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
         }
+
+        @ExceptionHandler(MethodArgumentNotValidException.class)
+        public ResponseEntity<Map<String, String>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+                Map<String, String> errors = new HashMap<>();
+
+                ex.getBindingResult().getFieldErrors()
+                                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+
+                return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        }
+
 }
