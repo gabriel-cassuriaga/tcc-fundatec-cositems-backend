@@ -30,6 +30,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> {
+                    req.requestMatchers("/").permitAll();
                     req.requestMatchers("/auth/**").permitAll();
                     req.requestMatchers(HttpMethod.GET, "/products").permitAll();
                     req.requestMatchers(HttpMethod.GET, "/products/**").permitAll();
