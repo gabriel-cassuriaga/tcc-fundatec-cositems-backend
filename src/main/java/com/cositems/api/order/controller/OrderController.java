@@ -1,7 +1,7 @@
 package com.cositems.api.order.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -57,18 +57,18 @@ public class OrderController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
-        List<OrderResponseDTO> orders = orderService.getAllOrders();
-        return new ResponseEntity<>(orders, HttpStatus.OK);
+    public ResponseEntity<Page<OrderResponseDTO>> getAllOrders(Pageable pageable) {
+        Page<OrderResponseDTO> ordersPage = orderService.getAllOrders(pageable);
+        return new ResponseEntity<>(ordersPage, HttpStatus.OK);
 
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/my-orders")
-    public ResponseEntity<List<OrderResponseDTO>> getUserOrders(Authentication authentication) {
+    public ResponseEntity<Page<OrderResponseDTO>> getUserOrders(Pageable pageable, Authentication authentication) {
         String loggedInCustomerId = getLoggedInUserId(authentication);
-        List<OrderResponseDTO> orders = orderService.getUserOrders(loggedInCustomerId);
-        return new ResponseEntity<>(orders, HttpStatus.OK);
+        Page<OrderResponseDTO> ordersPage = orderService.getUserOrders(loggedInCustomerId, pageable);
+        return new ResponseEntity<>(ordersPage, HttpStatus.OK);
 
     }
 
