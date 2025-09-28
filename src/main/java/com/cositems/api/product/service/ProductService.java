@@ -1,6 +1,5 @@
 package com.cositems.api.product.service;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -8,7 +7,6 @@ import org.springframework.stereotype.Service;
 import com.cositems.api.exception.AuthorizationException;
 import com.cositems.api.exception.BusinessRuleException;
 import com.cositems.api.exception.ResourceNotFoundException;
-import com.cositems.api.exception.ValidationException;
 import com.cositems.api.product.dto.ProductRequestDTO;
 import com.cositems.api.product.dto.ProductResponseDTO;
 import com.cositems.api.product.model.Product;
@@ -22,18 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductService {
     private final ProductRepository productRepository;
 
-    private void validateProductRequest(ProductRequestDTO productRequest) {
-        if (productRequest.name() == null || productRequest.name().isBlank()) {
-            throw new ValidationException("O nome do produto não pode ser vazio.");
-        }
-        if (productRequest.price() == null || productRequest.price().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ValidationException("O preço do produto deve ser um valor positivo.");
-        }
-    }
-
     public ProductResponseDTO createProduct(ProductRequestDTO productRequest, String loggedInSellerId) {
-
-        validateProductRequest(productRequest);
 
         if (productRepository.findBySellerIdAndName(loggedInSellerId, productRequest.name()).isPresent()) {
             throw new BusinessRuleException("Você já possui um produto cadastrado com este nome.");
@@ -86,7 +73,6 @@ public class ProductService {
         if (productRepository.findBySellerIdAndName(loggedInSellerId, productRequest.name()).isPresent()) {
             throw new BusinessRuleException("Você já possui um produto cadastrado com este nome.");
         }
-        validateProductRequest(productRequest);
 
         product.setName(productRequest.name());
         product.setPrice(productRequest.price());

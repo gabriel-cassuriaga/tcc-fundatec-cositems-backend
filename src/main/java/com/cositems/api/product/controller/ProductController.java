@@ -20,6 +20,7 @@ import com.cositems.api.product.dto.ProductResponseDTO;
 import com.cositems.api.product.service.ProductService;
 import com.cositems.api.user.model.User;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -35,7 +36,7 @@ public class ProductController {
 
     @PostMapping
     @PreAuthorize("hasRole('SELLER')")
-    public ResponseEntity<ProductResponseDTO> createProduct(@RequestBody ProductRequestDTO productRequest,
+    public ResponseEntity<ProductResponseDTO> createProduct(@RequestBody @Valid ProductRequestDTO productRequest,
             Authentication authentication) {
         String loggedInSellerId = getLoggedInUserId(authentication);
 
@@ -60,7 +61,7 @@ public class ProductController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable String id,
-            @RequestBody ProductRequestDTO productRequest, Authentication authentication) {
+            @RequestBody @Valid ProductRequestDTO productRequest, Authentication authentication) {
         String loggedInSellerId = getLoggedInUserId(authentication);
 
         ProductResponseDTO productResponse = productService.updateProduct(id, productRequest, loggedInSellerId);
