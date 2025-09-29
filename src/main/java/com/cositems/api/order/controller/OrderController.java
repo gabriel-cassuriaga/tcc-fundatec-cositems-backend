@@ -55,14 +55,6 @@ public class OrderController {
 
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping
-    public ResponseEntity<Page<OrderResponseDTO>> getAllOrders(Pageable pageable) {
-        Page<OrderResponseDTO> ordersPage = orderService.getAllOrders(pageable);
-        return new ResponseEntity<>(ordersPage, HttpStatus.OK);
-
-    }
-
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/my-orders")
     public ResponseEntity<Page<OrderResponseDTO>> getUserOrders(Pageable pageable, Authentication authentication) {
@@ -70,20 +62,6 @@ public class OrderController {
         Page<OrderResponseDTO> ordersPage = orderService.getUserOrders(loggedInCustomerId, pageable);
         return new ResponseEntity<>(ordersPage, HttpStatus.OK);
 
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}/pay")
-    public ResponseEntity<OrderResponseDTO> markAsPaid(@PathVariable String orderId) {
-        OrderResponseDTO orderResponse = orderService.markAsPaid(orderId);
-        return new ResponseEntity<>(orderResponse, HttpStatus.OK);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}/ship")
-    public ResponseEntity<OrderResponseDTO> markAsShipped(@PathVariable String orderId) {
-        OrderResponseDTO orderResponse = orderService.markAsShipped(orderId);
-        return new ResponseEntity<>(orderResponse, HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")

@@ -1,7 +1,5 @@
 package com.cositems.api.user.controller;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,14 +24,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping
-    public ResponseEntity<Page<UserResponseDTO>> getAll(Pageable pageable) {
-        Page<UserResponseDTO> usersPage = userService.getAllUsers(pageable);
-        return new ResponseEntity<>(usersPage, HttpStatus.OK);
-
-    }
 
     @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
     @GetMapping("/{id}")
