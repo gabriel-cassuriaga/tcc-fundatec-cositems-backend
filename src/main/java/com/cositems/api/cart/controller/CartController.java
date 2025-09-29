@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/cart")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('CUSTOMER')")
 public class CartController {
 
     private final CartService cartService;
@@ -31,14 +32,12 @@ public class CartController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<CartResponseDTO> getMyCart(Authentication authentication) {
         CartResponseDTO cart = cartService.getCart(getLoggedInUser(authentication));
         return ResponseEntity.ok(cart);
     }
 
     @PostMapping("/items")
-    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<CartResponseDTO> addItemToMyCart(@RequestBody @Valid CartItemRequestDTO itemDto,
             Authentication authentication) {
         CartResponseDTO cart = cartService.addItemToCart(getLoggedInUser(authentication), itemDto);
@@ -46,7 +45,6 @@ public class CartController {
     }
 
     @DeleteMapping("/items/{productId}")
-    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<CartResponseDTO> removeItemFromMyCart(@PathVariable String productId,
             Authentication authentication) {
         CartResponseDTO cart = cartService.removeItemFromCart(getLoggedInUser(authentication), productId);
@@ -54,7 +52,6 @@ public class CartController {
     }
 
     @DeleteMapping
-    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<CartResponseDTO> clearMyCart(Authentication authentication) {
         CartResponseDTO cart = cartService.clearCart(getLoggedInUser(authentication));
         return ResponseEntity.ok(cart);
