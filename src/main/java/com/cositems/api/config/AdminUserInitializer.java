@@ -4,8 +4,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import com.cositems.api.user.model.Admin;
-import com.cositems.api.user.repository.UserRepository;
+import com.cositems.api.model.Admin;
+import com.cositems.api.repository.UserRepository;
+import com.cositems.api.security.SecurityProperties;
 
 import lombok.RequiredArgsConstructor;
 
