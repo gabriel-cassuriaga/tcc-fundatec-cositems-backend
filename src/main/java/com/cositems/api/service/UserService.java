@@ -10,8 +10,7 @@ import com.cositems.api.dto.UserResponseDTO;
 import com.cositems.api.enums.UserType;
 import com.cositems.api.exception.BusinessRuleException;
 import com.cositems.api.exception.ResourceNotFoundException;
-import com.cositems.api.model.Customer;
-import com.cositems.api.model.Seller;
+import com.cositems.api.mapper.UserMapper;
 import com.cositems.api.model.User;
 import com.cositems.api.repository.UserRepository;
 
@@ -22,51 +21,27 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    private void checkUniqueness(UserRequestDTO userRequest) {
-        if (userRepository.findByEmail(userRequest.email()).isPresent()) {
-            throw new BusinessRuleException("O e-mail '" + userRequest.email() + "' já está em uso.");
-        }
-    }
+    private final UserMapper userMapper;
 
     public UserResponseDTO createUser(UserRequestDTO userRequest, UserType userType) {
         checkUniqueness(userRequest);
 
         String hashedPassword = passwordEncoder.encode(userRequest.password());
-
-        User userToSave;
-
-        if (userType == UserType.CUSTOMER) {
-            userToSave = Customer.builder()
-                    .displayName(userRequest.displayName())
-                    .email(userRequest.email())
-                    .password(hashedPassword)
-                    .build();
-        } else if (userType == UserType.SELLER) {
-            userToSave = Seller.builder()
-                    .displayName(userRequest.displayName())
-                    .email(userRequest.email())
-                    .password(hashedPassword)
-                    .build();
-        } else {
-            throw new IllegalArgumentException("Tipo de usuário inválido: " + userType);
-        }
-
+        User userToSave = userMapper.toUser(userRequest, hashedPassword, userType);
         User savedUser = userRepository.save(userToSave);
-        return new UserResponseDTO(savedUser);
+
+        return userMapper.toUserResponseDTO(savedUser);
     }
 
     public UserResponseDTO getUserById(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o id: " + id));
 
-        return new UserResponseDTO(user);
-
+        return userMapper.toUserResponseDTO(user);
     }
 
     public Page<UserResponseDTO> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable).map(UserResponseDTO::new);
-
+        return userRepository.findAll(pageable).map(userMapper::toUserResponseDTO);
     }
 
     public void deleteUser(String id) {
@@ -75,6 +50,11 @@ public class UserService {
         }
 
         userRepository.deleteById(id);
+    }
 
+    private void checkUniqueness(UserRequestDTO userRequest) {
+        if (userRepository.findByEmail(userRequest.email()).isPresent()) {
+            throw new BusinessRuleException("O e-mail '" + userRequest.email() + "' já está em uso.");
+        }
     }
 }
