@@ -30,7 +30,7 @@ public class ProductService {
 
         Product product = productMapper.toProduct(loggedInSellerId, productRequest);
         Product savedProduct = productRepository.save(product);
-        
+
         return productMapper.toProductResponseDTO(savedProduct);
     }
 
@@ -73,12 +73,16 @@ public class ProductService {
                     }
                 });
 
+        applyUpdatesToProduct(product, productRequest);
+
+        Product savedProduct = productRepository.save(product);
+        return productMapper.toProductResponseDTO(savedProduct);
+    }
+
+    private void applyUpdatesToProduct(Product product, ProductRequestDTO productRequest) {
         product.setName(productRequest.name());
         product.setPrice(productRequest.price());
         product.setDescription(productRequest.description());
         product.setQuantity(productRequest.quantity());
-
-        Product savedProduct = productRepository.save(product);
-        return productMapper.toProductResponseDTO(savedProduct);
     }
 }
