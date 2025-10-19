@@ -1,6 +1,5 @@
 package com.cositems.api.service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,10 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.cositems.api.dto.OrderRequestDTO;
 import com.cositems.api.dto.OrderResponseDTO;
-import com.cositems.api.enums.OrderStatus;
 import com.cositems.api.exception.AuthorizationException;
 import com.cositems.api.exception.BusinessRuleException;
 import com.cositems.api.exception.ResourceNotFoundException;
+import com.cositems.api.mapper.OrderMapper;
 import com.cositems.api.model.Order;
 import com.cositems.api.model.OrderItem;
 import com.cositems.api.model.Product;
@@ -31,6 +30,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final OrderMapper orderMapper;
 
     @Transactional
     public OrderResponseDTO createOrder(OrderRequestDTO orderRequest, String loggedInUserId) {
@@ -49,30 +49,18 @@ public class OrderService {
                     product.setQuantity(product.getQuantity() - itemDto.quantity());
                     productsToUpdate.add(product);
 
-                    return OrderItem.builder()
-                            .productId(product.getId())
-                            .name(product.getName())
-                            .quantity(itemDto.quantity())
-                            .price(product.getPrice())
-                            .build();
+                    return orderMapper.toOrderItem(product, itemDto.quantity());
                 }).collect(Collectors.toList());
 
         productRepository.saveAll(productsToUpdate);
-
-        Order order = Order.builder()
-                .userId(loggedInUserId)
-                .orderDate(LocalDateTime.now())
-                .status(OrderStatus.PENDING)
-                .items(orderItems)
-                .total(Order.calculateTotal(orderItems))
-                .build();
-
+        Order order = orderMapper.toOrder(loggedInUserId, orderItems);
         Order savedOrder = orderRepository.save(order);
-        return new OrderResponseDTO(savedOrder);
+        
+        return orderMapper.toOrderResponseDTO(savedOrder);
     }
 
     public Page<OrderResponseDTO> getAllOrders(Pageable pageable) {
-        return orderRepository.findAll(pageable).map(OrderResponseDTO::new);
+        return orderRepository.findAll(pageable).map(orderMapper::toOrderResponseDTO);
     }
 
     public OrderResponseDTO getOrderById(String id, User loggedInUser) {
@@ -85,6 +73,12 @@ public class OrderService {
 
     }
 
+    public Page<OrderResponseDTO> getUserOrders(String loggedInCustomerId, Pageable pageable) {
+        Page<Order> ordersPage = orderRepository.findByUserId(loggedInCustomerId, pageable);
+
+        return ordersPage.map(orderMapper::toOrderResponseDTO);
+    }
+
     @Transactional
     public OrderResponseDTO markAsPaid(String id) {
         Order order = orderRepository.findById(id)
@@ -94,8 +88,7 @@ public class OrderService {
 
         Order updatedOrder = orderRepository.save(order);
 
-        return new OrderResponseDTO(updatedOrder);
-
+        return orderMapper.toOrderResponseDTO(updatedOrder);
     }
 
     @Transactional
@@ -107,8 +100,7 @@ public class OrderService {
 
         Order updatedOrder = orderRepository.save(order);
 
-        return new OrderResponseDTO(updatedOrder);
-
+        return orderMapper.toOrderResponseDTO(updatedOrder);
     }
 
     @Transactional
@@ -121,8 +113,7 @@ public class OrderService {
         order.cancel();
         Order updatedOrder = orderRepository.save(order);
 
-        return new OrderResponseDTO(updatedOrder);
-
+        return orderMapper.toOrderResponseDTO(updatedOrder);
     }
 
     private void validateOwnershipOrAdmin(Order order, User user) {
@@ -132,11 +123,5 @@ public class OrderService {
         if (!isOwner && !isAdmin) {
             throw new AuthorizationException("Você não tem permissão para acessar este pedido.");
         }
-    }
-
-    public Page<OrderResponseDTO> getUserOrders(String loggedInCustomerId, Pageable pageable) {
-        Page<Order> ordersPage = orderRepository.findByUserId(loggedInCustomerId, pageable);
-
-        return ordersPage.map(OrderResponseDTO::new);
     }
 }
