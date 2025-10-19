@@ -9,6 +9,7 @@ import com.cositems.api.dto.ProductResponseDTO;
 import com.cositems.api.exception.AuthorizationException;
 import com.cositems.api.exception.BusinessRuleException;
 import com.cositems.api.exception.ResourceNotFoundException;
+import com.cositems.api.mapper.ProductMapper;
 import com.cositems.api.model.Product;
 import com.cositems.api.repository.ProductRepository;
 
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 public class ProductService {
     private final ProductRepository productRepository;
+    private final ProductMapper productMapper;
 
     public ProductResponseDTO createProduct(ProductRequestDTO productRequest, String loggedInSellerId) {
 
@@ -26,30 +28,22 @@ public class ProductService {
             throw new BusinessRuleException("Você já possui um produto cadastrado com este nome.");
         }
 
-        Product product = Product.builder()
-                .name(productRequest.name())
-                .sellerId(loggedInSellerId)
-                .price(productRequest.price())
-                .description(productRequest.description())
-                .quantity(productRequest.quantity())
-                .build();
-
+        Product product = productMapper.toProduct(loggedInSellerId, productRequest);
         Product savedProduct = productRepository.save(product);
-        return new ProductResponseDTO(savedProduct);
-
+        
+        return productMapper.toProductResponseDTO(savedProduct);
     }
 
     public ProductResponseDTO getProductById(String id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o id: " + id));
 
-        return new ProductResponseDTO(product);
-
+        return productMapper.toProductResponseDTO(product);
     }
 
     public Page<ProductResponseDTO> getAllProducts(Pageable pageable) {
         return productRepository.findAll(pageable)
-                .map(ProductResponseDTO::new);
+                .map(productMapper::toProductResponseDTO);
     }
 
     public void deleteProduct(String productId, String loggedInSellerId) {
@@ -61,7 +55,6 @@ public class ProductService {
         }
 
         productRepository.deleteById(productId);
-
     }
 
     public ProductResponseDTO updateProduct(String id, ProductRequestDTO productRequest, String loggedInSellerId) {
@@ -86,7 +79,6 @@ public class ProductService {
         product.setQuantity(productRequest.quantity());
 
         Product savedProduct = productRepository.save(product);
-        return new ProductResponseDTO(savedProduct);
-
+        return productMapper.toProductResponseDTO(savedProduct);
     }
 }
