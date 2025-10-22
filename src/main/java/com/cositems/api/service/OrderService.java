@@ -1,5 +1,6 @@
 package com.cositems.api.service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final OrderMapper orderMapper;
+    private final PaymentService paymentService;
 
     @Transactional
     public OrderResponseDTO createOrder(OrderRequestDTO orderRequest, String loggedInUserId) {
@@ -52,10 +54,17 @@ public class OrderService {
                     return orderMapper.toOrderItem(product, itemDto.quantity());
                 }).collect(Collectors.toList());
 
+        BigDecimal totalAmount = calculateTotal(orderItems);
+
+        String transactionId = paymentService.processCreditCardPayment(totalAmount, orderRequest.paymentToken());
+
         productRepository.saveAll(productsToUpdate);
-        Order order = orderMapper.toOrder(loggedInUserId, orderItems);
+
+        Order order = orderMapper.toOrder(loggedInUserId, orderItems, transactionId);
+        order.markAsPaid();
+
         Order savedOrder = orderRepository.save(order);
-        
+
         return orderMapper.toOrderResponseDTO(savedOrder);
     }
 
@@ -70,12 +79,10 @@ public class OrderService {
         validateOwnershipOrAdmin(order, loggedInUser);
 
         return new OrderResponseDTO(order);
-
     }
 
     public Page<OrderResponseDTO> getUserOrders(String loggedInCustomerId, Pageable pageable) {
         Page<Order> ordersPage = orderRepository.findByUserId(loggedInCustomerId, pageable);
-
         return ordersPage.map(orderMapper::toOrderResponseDTO);
     }
 
@@ -83,7 +90,6 @@ public class OrderService {
     public OrderResponseDTO markAsPaid(String id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o id: " + id));
-
         order.markAsPaid();
 
         Order updatedOrder = orderRepository.save(order);
@@ -95,7 +101,6 @@ public class OrderService {
     public OrderResponseDTO markAsShipped(String id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o id: " + id));
-
         order.markAsShipped();
 
         Order updatedOrder = orderRepository.save(order);
@@ -116,6 +121,12 @@ public class OrderService {
         return orderMapper.toOrderResponseDTO(updatedOrder);
     }
 
+    private BigDecimal calculateTotal(List<OrderItem> items) {
+        return items.stream()
+                .map(item -> item.getPrice().multiply(new BigDecimal(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
     private void validateOwnershipOrAdmin(Order order, User user) {
         boolean isOwner = order.getUserId().equals(user.getId());
         boolean isAdmin = user.getAuthorities().stream()
@@ -124,4 +135,5 @@ public class OrderService {
             throw new AuthorizationException("Você não tem permissão para acessar este pedido.");
         }
     }
+
 }
