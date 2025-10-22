@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.cositems.api.dto.OrderRequestDTO;
+import com.cositems.api.dto.OrderRequestDTO.OrderItemRequestDTO;
 import com.cositems.api.dto.OrderResponseDTO;
 import com.cositems.api.exception.AuthorizationException;
 import com.cositems.api.exception.BusinessRuleException;
@@ -38,21 +39,9 @@ public class OrderService {
     public OrderResponseDTO createOrder(OrderRequestDTO orderRequest, String loggedInUserId) {
         List<Product> productsToUpdate = new ArrayList<>();
 
-        List<OrderItem> orderItems = orderRequest.items().stream()
-                .map(itemDto -> {
-                    Product product = productRepository.findById(itemDto.productId())
-                            .orElseThrow(() -> new ResourceNotFoundException(
-                                    "Produto com id " + itemDto.productId() + " não encontrado."));
-
-                    if (product.getQuantity() < itemDto.quantity()) {
-                        throw new BusinessRuleException("Estoque insuficiente para o produto: " + product.getName());
-                    }
-
-                    product.setQuantity(product.getQuantity() - itemDto.quantity());
-                    productsToUpdate.add(product);
-
-                    return orderMapper.toOrderItem(product, itemDto.quantity());
-                }).collect(Collectors.toList());
+       List<OrderItem> orderItems = orderRequest.items().stream()
+            .map(itemDto -> validateAndUpdateStock(itemDto, productsToUpdate))
+            .collect(Collectors.toList());
 
         BigDecimal totalAmount = calculateTotal(orderItems);
 
@@ -134,6 +123,21 @@ public class OrderService {
         if (!isOwner && !isAdmin) {
             throw new AuthorizationException("Você não tem permissão para acessar este pedido.");
         }
+    }
+
+    private OrderItem validateAndUpdateStock(OrderItemRequestDTO itemDto, List<Product> productsToUpdate) {
+        Product product = productRepository.findById(itemDto.productId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Produto com id " + itemDto.productId() + " não encontrado."));
+
+        if (product.getQuantity() < itemDto.quantity()) {
+            throw new BusinessRuleException("Estoque insuficiente para o produto: " + product.getName());
+        }
+
+        product.setQuantity(product.getQuantity() - itemDto.quantity());
+        productsToUpdate.add(product);
+
+        return orderMapper.toOrderItem(product, itemDto.quantity());
     }
 
 }
