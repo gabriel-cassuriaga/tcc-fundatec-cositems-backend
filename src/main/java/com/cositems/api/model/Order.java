@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.cositems.api.enums.OrderStatus;
+import com.cositems.api.enums.PaymentMethodType;
 import com.cositems.api.exception.BusinessRuleException;
 
 import lombok.AllArgsConstructor;
@@ -31,6 +32,7 @@ public class Order {
     private OrderStatus status;
     private BigDecimal total;
     private String transactionId;
+    private PaymentMethodType paymentMethodType;
 
     private List<OrderItem> items;
 
