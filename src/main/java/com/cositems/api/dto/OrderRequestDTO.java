@@ -8,7 +8,10 @@ import java.util.List;
 
 public record OrderRequestDTO(
         @NotEmpty(message = "O pedido deve conter pelo menos um item.")
-        @Valid List<OrderItemRequestDTO> items) {
+        @Valid List<OrderItemRequestDTO> items,
+        @NotBlank(message = "O token de pagamento é obrigatório para processar o pedido.")
+        String paymentToken
+        ) {
             
     public record OrderItemRequestDTO(
             @NotBlank(message = "O ID do produto não pode ser vazio.") String productId,
