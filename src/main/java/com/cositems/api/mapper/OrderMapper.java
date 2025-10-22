@@ -16,16 +16,17 @@ public class OrderMapper {
 
     public OrderResponseDTO toOrderResponseDTO(Order order) {
         return new OrderResponseDTO(order.getId(), order.getUserId(), order.getOrderDate(), order.getStatus(),
-                order.getTotal(), order.getItems());
+                order.getTotal(), order.getTransactionId(), order.getItems());
     }
 
-    public Order toOrder(String loggedInUserId, List<OrderItem> orderItems) {
+    public Order toOrder(String loggedInUserId, List<OrderItem> orderItems, String transactionId) {
         return Order.builder()
                 .userId(loggedInUserId)
                 .orderDate(LocalDateTime.now())
                 .status(OrderStatus.PENDING)
-                .items(orderItems)
                 .total(Order.calculateTotal(orderItems))
+                .transactionId(transactionId)
+                .items(orderItems)
                 .build();
     }
 

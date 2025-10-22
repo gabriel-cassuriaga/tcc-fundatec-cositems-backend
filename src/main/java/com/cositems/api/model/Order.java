@@ -30,6 +30,7 @@ public class Order {
     private LocalDateTime orderDate;
     private OrderStatus status;
     private BigDecimal total;
+    private String transactionId;
 
     private List<OrderItem> items;
 
