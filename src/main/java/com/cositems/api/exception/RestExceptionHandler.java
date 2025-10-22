@@ -101,4 +101,16 @@ public class RestExceptionHandler {
                 return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
         }
 
+        @ExceptionHandler(PaymentFailedException.class)
+        public ResponseEntity<ErrorResponseDTO> handlePaymentFailed(PaymentFailedException ex,
+                        HttpServletRequest request) {
+                ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                                Instant.now(),
+                                HttpStatus.BAD_REQUEST.value(),
+                                "Payment failed",
+                                ex.getMessage(),
+                                request.getRequestURI());
+
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
 }
